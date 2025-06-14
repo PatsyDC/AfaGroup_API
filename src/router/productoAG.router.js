@@ -18,7 +18,7 @@ const upload = multer({
     storage: multerS3({
         s3: s3,
         bucket: process.env.AWS_BUCKET_NAME,
-        acl: 'public-read',
+        // acl: 'public-read',
         contentType: multerS3.AUTO_CONTENT_TYPE,
         key: function (req, file, cb) {
         const filename = `productos/${Date.now()}${path.extname(file.originalname)}`;
@@ -26,6 +26,7 @@ const upload = multer({
         }
     })
 });
+
 // Configuración de almacenamiento
 // const storage = multer.diskStorage({
 //     destination: (req, file, cb) => {
