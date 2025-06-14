@@ -1,19 +1,41 @@
+const { S3Client } = require("@aws-sdk/client-s3");
 const router = require('express').Router()
 const multer = require('multer');
+const multerS3 = require('multer-s3');
 const path = require('path');
 const ProductoAG = require('../model/productoAG.model')
 
-// Configuración de almacenamiento
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Carpeta donde se guardarán las imágenes
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Nombre único para la imagen
+const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     }
 });
 
-const upload = multer({ storage });
+const upload = multer({
+    storage: multerS3({
+        s3: s3,
+        bucket: process.env.AWS_BUCKET_NAME,
+        acl: 'public-read',
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        key: function (req, file, cb) {
+        const filename = `productos/${Date.now()}${path.extname(file.originalname)}`;
+        cb(null, filename);
+        }
+    })
+});
+// Configuración de almacenamiento
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, 'uploads/'); // Carpeta donde se guardarán las imágenes
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, Date.now() + path.extname(file.originalname)); // Nombre único para la imagen
+//     }
+// });
+
+// const upload = multer({ storage });
 
 router.get("/productoAG/", async(req, res) => {
     const producto = await ProductoAG.findAll()
@@ -44,8 +66,7 @@ router.post("/productoAG/", upload.single('imagen_url'), async (req, res) => {
 
         const {categoria_id, nombre_producto, descripcion_producto, codigo_sunat, tipo_producto, tipo_existencia,compra, kardex, nombre_comercial, stock_actual, stock_minimo,stock_maximo, peso, precio } = req.body;
 
-        const imagen_url = req.file ? `https://afagroup-api.onrender.com/uploads/${req.file.filename}` : null;
-
+        const imagen_url = req.file ? req.file.location : null;
         const createProducto = await ProductoAG.create({
             categoria_id, nombre_producto, descripcion_producto, codigo_sunat, tipo_producto, tipo_existencia,compra, kardex, nombre_comercial,stock_actual,stock_minimo,stock_maximo, peso, imagen_url, precio
         });
@@ -81,8 +102,8 @@ router.put("/productoAG/:producto_id/", upload.single('imagen_url'), async (req,
         }
 
         // Si se sube una nueva imagen, actualizar la URL
-        const imagen_url = req.file ? `https://afagroup-api.onrender.com/uploads/${req.file.filename}` : producto.imagen_url;
-
+        const imagen_url = req.file ? req.file.location : null;
+        
         // Actualizar el producto
         await ProductoAG.update({
             categoria_id: dataProducto.categoria_id,
