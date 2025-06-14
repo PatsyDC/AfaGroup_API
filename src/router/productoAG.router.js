@@ -6,11 +6,12 @@ const path = require('path');
 const ProductoAG = require('../model/productoAG.model')
 
 const s3 = new S3Client({
-    region: process.env.AWS_REGION,
+    region: 'us-east-2',
     credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    }
+    },
+  endpoint: 'https://s3.us-east-2.amazonaws.com', // también puedes omitir esta línea si `region` está correcto
 });
 
 const upload = multer({
