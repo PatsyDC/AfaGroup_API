@@ -10,6 +10,8 @@ require('./model/contacto.model');
 require('./model/cliente.model');
 require('./model/categoria.model'); // Asegúrate de que exista
 require('./model/associations');
+require('./model/cotizacionManual.model');
+require('./model/prodCM.model');
 
 const port = 3000;
 
