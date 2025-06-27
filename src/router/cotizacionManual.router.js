@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const CotizacionManual = require('../model/cotizacionManual.model');
 
-// GET todas las cotizaciones
 router.get('/cotizaciones/', async (req, res) => {
 try {
     const cotizaciones = await CotizacionManual.findAll();
@@ -19,7 +18,7 @@ try {
 }
 });
 
-// GET una cotización por ID
+
 router.get('/cotizaciones/:id', async (req, res) => {
 try {
     const cotizacion = await CotizacionManual.findOne({
@@ -45,7 +44,7 @@ try {
 }
 });
 
-// POST crear cotización
+
 router.post('/cotizaciones/', async (req, res) => {
 try {
     await CotizacionManual.sync(); // asegura que la tabla exista
@@ -65,7 +64,7 @@ try {
 }
 });
 
-// PUT editar cotización
+
 router.put('/cotizaciones/:id', async (req, res) => {
 try {
     const updated = await CotizacionManual.update(req.body, {
@@ -86,7 +85,7 @@ try {
 }
 });
 
-// DELETE eliminar cotización
+
 router.delete('/cotizaciones/:id', async (req, res) => {
 try {
     const deleted = await CotizacionManual.destroy({
