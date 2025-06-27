@@ -9,6 +9,7 @@ require('./model/cotizacionWeb.model');
 require('./model/contacto.model');
 require('./model/cliente.model');
 require('./model/categoria.model'); // Asegúrate de que exista
+require('./model/associations');
 
 const port = 3000;
 
