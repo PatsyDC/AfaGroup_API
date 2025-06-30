@@ -84,6 +84,10 @@ productoAG.init({
         type: DataTypes.FLOAT,
         allowNull: false,
     },
+    ficha_tecnica: {
+        type: DataTypes.STRING, // Guardará la URL de la imagen
+        allowNull: true
+    }
 }, {
     sequelize,
     modelName: 'productoAG'

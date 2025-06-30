@@ -62,87 +62,126 @@ router.get("/productoAG/:producto_id/", async(req, res) => {
     })
 });
 
-router.post("/productoAG/", upload.single('imagen_url'), async (req, res) => {
-    try {
-        await ProductoAG.sync();
+router.post("/productoAG/", upload.fields([
+  { name: 'imagen_url', maxCount: 1 },
+  { name: 'ficha_tecnica', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    await ProductoAG.sync();
 
-        const {categoria_id, nombre_producto, descripcion_producto, codigo_sunat, tipo_producto, tipo_existencia,compra, kardex, nombre_comercial, stock_actual, stock_minimo,stock_maximo, peso, precio } = req.body;
+    const {
+      categoria_id,
+      nombre_producto,
+      descripcion_producto,
+      codigo_sunat,
+      tipo_producto,
+      tipo_existencia,
+      compra,
+      kardex,
+      nombre_comercial,
+      stock_actual,
+      stock_minimo,
+      stock_maximo,
+      peso,
+      precio
+    } = req.body;
 
-        const imagen_url = req.file ? req.file.location : null;
-        const createProducto = await ProductoAG.create({
-            categoria_id, nombre_producto, descripcion_producto, codigo_sunat, tipo_producto, tipo_existencia,compra, kardex, nombre_comercial,stock_actual,stock_minimo,stock_maximo, peso, imagen_url, precio
-        });
+    const imagen_url = req.files['imagen_url'] ? req.files['imagen_url'][0].location : null;
+    const ficha_tecnica = req.files['ficha_tecnica'] ? req.files['ficha_tecnica'][0].location : null;
 
-        res.status(201).json({
-            ok: true,
-            status: 201,
-            message: "Producto creado", 
-            body: createProducto          
-        });
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            message: "error al crear producto",
-            error: error.message
-        });
-    }
+    const createProducto = await ProductoAG.create({
+      categoria_id,
+      nombre_producto,
+      descripcion_producto,
+      codigo_sunat,
+      tipo_producto,
+      tipo_existencia,
+      compra,
+      kardex,
+      nombre_comercial,
+      stock_actual,
+      stock_minimo,
+      stock_maximo,
+      peso,
+      precio,
+      imagen_url,
+      ficha_tecnica
+    });
+
+    res.status(201).json({
+      ok: true,
+      status: 201,
+      message: "Producto creado",
+      body: createProducto
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      message: "error al crear producto",
+      error: error.message
+    });
+  }
 });
 
-router.put("/productoAG/:producto_id/", upload.single('imagen_url'), async (req, res) => {
-    try {
-        const id = req.params.producto_id;
-        const dataProducto = req.body;
+router.put("/productoAG/:producto_id/", upload.fields([
+  { name: 'imagen_url', maxCount: 1 },
+  { name: 'ficha_tecnica', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const id = req.params.producto_id;
+    const dataProducto = req.body;
 
-        // Verificar si el producto existe
-        const producto = await ProductoAG.findByPk(id);
-        if (!producto) {
-            return res.status(404).json({
-                ok: false,
-                status: 404,
-                message: "Producto no encontrado"
-            });
-        }
-
-        // Si se sube una nueva imagen, actualizar la URL
-        const imagen_url = req.file ? req.file.location : null;
-        
-        // Actualizar el producto
-        await ProductoAG.update({
-            categoria_id: dataProducto.categoria_id,
-            nombre_producto: dataProducto.nombre_producto,
-            descripcion_producto: dataProducto.descripcion_producto,
-            codigo_sunat: dataProducto.codigo_sunat,
-            tipo_producto: dataProducto.tipo_producto,
-            tipo_existencia: dataProducto.tipo_existencia,
-            compra: dataProducto.compra,
-            kardex: dataProducto.kardex,
-            nombre_comercial: dataProducto.nombre_comercial,
-            descripcion_producto: dataProducto.descripcion_producto,
-            stock_minimo: dataProducto.stock_minimo,
-            stock_maximo: dataProducto.stock_maximo,
-            peso: dataProducto.peso,
-            imagen_url: imagen_url,
-            precio: dataProducto.precio,
-        }, {
-            where: { producto_id: id }
-        });
-
-        // Obtener el producto actualizado
-        const producto_actualizado = await ProductoAG.findByPk(id);
-
-        res.status(200).json({
-            ok: true,
-            status: 200,
-            message: "Producto actualizado correctamente",
-            body: producto_actualizado
-        });
-    } catch (error) {
-        res.status(500).json({
-            ok: false,
-            message: "Error al actualizar producto",
-            error: error.message
-        });
+    // Verificar si el producto existe
+    const producto = await ProductoAG.findByPk(id);
+    if (!producto) {
+      return res.status(404).json({
+        ok: false,
+        status: 404,
+        message: "Producto no encontrado"
+      });
     }
+
+    // Obtener archivos si se subieron
+    const imagen_url = req.files['imagen_url'] ? req.files['imagen_url'][0].location : producto.imagen_url;
+    const ficha_tecnica = req.files['ficha_tecnica'] ? req.files['ficha_tecnica'][0].location : producto.ficha_tecnica;
+
+    // Actualizar el producto
+    await ProductoAG.update({
+      categoria_id: dataProducto.categoria_id,
+      nombre_producto: dataProducto.nombre_producto,
+      descripcion_producto: dataProducto.descripcion_producto,
+      codigo_sunat: dataProducto.codigo_sunat,
+      tipo_producto: dataProducto.tipo_producto,
+      tipo_existencia: dataProducto.tipo_existencia,
+      compra: dataProducto.compra,
+      kardex: dataProducto.kardex,
+      nombre_comercial: dataProducto.nombre_comercial,
+      stock_minimo: dataProducto.stock_minimo,
+      stock_maximo: dataProducto.stock_maximo,
+      peso: dataProducto.peso,
+      imagen_url: imagen_url,
+      ficha_tecnica: ficha_tecnica,
+      precio: dataProducto.precio
+    }, {
+      where: { producto_id: id }
+    });
+
+    const producto_actualizado = await ProductoAG.findByPk(id);
+
+    res.status(200).json({
+      ok: true,
+      status: 200,
+      message: "Producto actualizado correctamente",
+      body: producto_actualizado
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      message: "Error al actualizar producto",
+      error: error.message
+    });
+  }
 });
 
 router.delete("/productoAG/:producto_id/", async (req, res) => {
